@@ -44,8 +44,6 @@ class Availability:
 
         return {k:v for k,v in campsites.items() if v["min_num_people"] <= num_people and v["max_num_people"] >= num_people}
 
-
-
     def filter_sites_by_date(self, start_date, end_date, campsites=None):
         if campsites is None:
             campsites = self.data["campsites"]
