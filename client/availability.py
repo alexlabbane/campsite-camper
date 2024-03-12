@@ -43,8 +43,8 @@ class Availability:
         except:
             print(f"{datetime.datetime.now()}: HTTP Request to recreation.gov failed. Retries left: {retry}")
             if retry > 0:
-                print(f"Retrying in {self.DEFAULT_RETRY_COOLDOWN_SEC} seconds")
-                sleep(self.DEFAULT_RETRY_COOLDOWN_SEC)
+                print(f"Retrying in {Availability.DEFAULT_RETRY_COOLDOWN_SEC} seconds")
+                sleep(Availability.DEFAULT_RETRY_COOLDOWN_SEC)
                 self.refresh_data(ttl, retry - 1)
             else:
                 # TODO: Notify that we had an error accessing recreation.gov API
