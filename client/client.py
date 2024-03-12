@@ -26,7 +26,6 @@ def get_availability(campground_id, month=datetime.date.today().month, year=date
 
     request_url = CAMPGROUND_AVAILABILITY.format(CAMPGROUND_ID=campground_id)
     
-    print(request_url)
     res = requests.get(request_url, params=params, headers=headers)
     if res.status_code != 200:
         raise Exception(f"Error code {res.status_code} received for API request {request_url}")
