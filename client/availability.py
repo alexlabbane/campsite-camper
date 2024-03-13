@@ -1,11 +1,13 @@
 # Answer availability queries about the campsite
 import datetime
+
+from custom_types.custom_types import CampsiteDate, CampsiteEntry
 from time import sleep
-from client import get_availability, RESPONSE_DATE_FORMAT
+from client.client import get_availability, RESPONSE_DATE_FORMAT
 
 # Check if specific site is available between start_date, end_date
 # return true if it is
-def filter_site(campsite, start_date, end_date):
+def filter_site(campsite: dict, start_date: datetime.date, end_date: datetime.date):
     available = False
 
     for date_str, availability in campsite["availabilities"].items():
@@ -18,9 +20,9 @@ def filter_site(campsite, start_date, end_date):
     return available
 
 class Availability:
-    DEFAULT_TTL_SEC = 60 * 5
-    DEFAULT_HTTP_RETRIES = 3
-    DEFAULT_RETRY_COOLDOWN_SEC = 3
+    DEFAULT_TTL_SEC: int = 60 * 5
+    DEFAULT_HTTP_RETRIES: int = 3
+    DEFAULT_RETRY_COOLDOWN_SEC: int = 3
 
     def __init__(self, campground_id, month=datetime.date.today().month, year=datetime.date.today().year):
         self.campground_id = campground_id
@@ -32,7 +34,7 @@ class Availability:
     # Re-fetch fresh data
     # TODO: Handle data that spans multiple months (smush multiple request together?)
     # TTL is in seconds
-    def refresh_data(self, ttl=DEFAULT_TTL_SEC, retry=DEFAULT_HTTP_RETRIES):
+    def refresh_data(self, ttl: int = DEFAULT_TTL_SEC, retry: int = DEFAULT_HTTP_RETRIES):
         cur_time = datetime.datetime.now()
         if self.last_update is not None and (cur_time - datetime.timedelta(seconds=ttl)) < self.last_update:
             return
@@ -56,21 +58,28 @@ class Availability:
         return self.data["count"]
 
     # Return the filtered sites
-    def filter_sites_by_capacity(self, num_people=1, campsites=None):
+    def filter_sites_by_capacity(self, num_people: int = 1, campsites: dict = None):
         self.refresh_data()
         if campsites is None:
             campsites = self.data["campsites"]
 
         return {k:v for k,v in campsites.items() if v["min_num_people"] <= num_people and v["max_num_people"] >= num_people}
 
-    def filter_sites_by_date(self, start_date, end_date, campsites=None):
+    def filter_sites_by_date(self, 
+            start_date: datetime.date, 
+            end_date: datetime.date, 
+            campsites: dict = None):
         self.refresh_data()
         if campsites is None:
             campsites = self.data["campsites"]
 
         return {k:v for k,v in campsites.items() if filter_site(v, start_date, end_date)}
 
-    def filter_sites(self, start_date, end_date, num_people=1, campsites=None):
+    def filter_sites(self, 
+            start_date: datetime.date, 
+            end_date: datetime.date, 
+            num_people: int = 1, 
+            campsites: dict = None):
         self.refresh_data()
         if campsites is None:
             campsites = self.data["campsites"]
@@ -78,7 +87,23 @@ class Availability:
         campsites = self.filter_sites_by_date(start_date, end_date, campsites)
 
         return campsites
+    
+    def filter_sites_from_entry(self, campsite_entry: CampsiteEntry):
+        if campsite_entry.campsite_id != self.campground_id:
+            raise Exception(
+                f"CampsiteEntry and Availability objects are for different \
+campground IDs {campsite_entry.campsite_id} and {self.campground_id}") 
 
+        campsite_start_date: datetime.date = campsite_entry.start_date.get_as_date()
+        campsite_end_date: datetime.date = campsite_entry.end_date.get_as_date()
+
+        return self.filter_sites(
+            campsite_start_date,
+            campsite_end_date,
+            campsite_entry.num_people
+        )
+
+# No longer works
 if __name__=="__main__":
     # 232447 is for Upper Pines Yosemite, month/year defaults to current
     availability = Availability(232447, 4, 2024)

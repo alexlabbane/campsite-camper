@@ -4,7 +4,7 @@ class DBConfig:
     DB_CONFIG_INDENT_LEVEL=4
     KEY_DB_PATH = "db_path"
 
-    def __init__(self, config_file = "default_config.json"):
+    def __init__(self, config_file = "./db/service/default_config.json"):
         self.config_file = config_file
         self.refresh_config()
 
