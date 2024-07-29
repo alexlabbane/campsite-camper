@@ -1,5 +1,6 @@
 # Answer availability queries about the campsite
 import datetime
+import json
 
 from custom_types.custom_types import CampsiteDate, CampsiteEntry
 from time import sleep
@@ -20,7 +21,7 @@ def filter_site(campsite: dict, start_date: datetime.date, end_date: datetime.da
     return available
 
 class Availability:
-    DEFAULT_TTL_SEC: int = 60 * 5
+    DEFAULT_TTL_SEC: int = 60 * 3
     DEFAULT_HTTP_RETRIES: int = 3
     DEFAULT_RETRY_COOLDOWN_SEC: int = 3
 
@@ -39,9 +40,14 @@ class Availability:
         if self.last_update is not None and (cur_time - datetime.timedelta(seconds=ttl)) < self.last_update:
             return
 
+        print("Refreshing data")
         try:
             self.data = get_availability(self.campground_id, self.month, self.year)
             self.last_update = datetime.datetime.now()
+
+            # Dump the latest data
+            with open('latest_request.json', 'w') as dump_file:
+                json.dump(self.data, dump_file)
         except:
             print(f"{datetime.datetime.now()}: HTTP Request to recreation.gov failed. Retries left: {retry}")
             if retry > 0:
@@ -88,7 +94,7 @@ class Availability:
 
         return campsites
     
-    def filter_sites_from_entry(self, campsite_entry: CampsiteEntry):
+    def filter_sites_from_entry(self, campsite_entry: CampsiteEntry) -> list[CampsiteEntry]:
         if campsite_entry.campsite_id != self.campground_id:
             raise Exception(
                 f"CampsiteEntry and Availability objects are for different \

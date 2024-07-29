@@ -20,14 +20,17 @@ class CampsiteEntry:
     start_date: CampsiteDate
     end_date: CampsiteDate
     num_people: int
+    reserve_url: str
 
     @staticmethod
     def from_dict(obj: dict):
+        campsite_id = obj["campsite_id"]
         return CampsiteEntry(
-            obj["campsite_id"],
+            campsite_id,
             CampsiteDate.from_dict(obj["start_date"]),
             CampsiteDate.from_dict(obj["end_date"]),
-            obj["num_people"]
+            obj["num_people"],
+            f"https://www.recreation.gov/camping/campgrounds/{campsite_id}"
         )
     
     def __str__(self):

@@ -7,6 +7,7 @@ class CamperDB:
     def __init__(self, config_file: str = None):
         self.config: DBConfig = DBConfig() if config_file is None else DBConfig(config_file)
         self.campsite_entries: list[CampsiteEntry] = []
+        self.notification_recipients: dict = {}
         self.refresh_db()
 
     def __get_db_json(self):
@@ -28,10 +29,31 @@ class CamperDB:
 
         self.campsite_entries = new_entries
 
+        # Parse notification recipients
+        if "notification_recipients" in db_json:
+            self.notification_recipients = db_json["notification_recipients"]
+
+    def get_campsites(self):
+        return self.campsite_entries
+    
+    def get_email_notification_recipients(self):
+        if "email" in self.notification_recipients:
+            return self.notification_recipients["email"]
+    
+        return []
+    
+    def get_whatsapp_notification_recipients(self):
+        if "whatsapp" in self.notification_recipients:
+            return self.notification_recipients["whatsapp"]
+
+        return []
+
 # No longer works
 if __name__ == "__main__":
     db: CamperDB = CamperDB()
 
+    print(db.get_email_notification_recipients())
+    print(db.get_whatsapp_notification_recipients())
     for entry in db.campsite_entries:
         print("--------------------------------")
         print(entry)
