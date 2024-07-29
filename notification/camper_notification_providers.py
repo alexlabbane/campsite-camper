@@ -13,11 +13,11 @@ class CamperGmailProvider:
             self.password = config["APP_PASSWORD"]
 
     
-    def send_notification(self, recipients: list[str], 
-            campsite_entry: CampsiteEntry, retry: int = 3) -> bool:
+    def send_notification(self, campsite_entry: CampsiteEntry, retry: int = 3) -> bool:
         if retry == 0:
             return False
 
+        recipients = campsite_entry.notification_group.email
         msg = EmailMessage()
         msg_body = str(campsite_entry) + "\nReserve now at %s" % (campsite_entry.reserve_url)
         msg.set_content(msg_body)
@@ -33,7 +33,7 @@ class CamperGmailProvider:
             server.sendmail(self.username, recipients, msg.as_string())
             server.close()
         except BaseException:
-            return self.send_notification(recipients, campsite_entry, retry - 1)
+            return self.send_notification(campsite_entry, retry - 1)
         
         return True
 
@@ -45,9 +45,9 @@ class CamperWhatsappProvider:
             self.version = config["VERSION"]
             self.phone_number_id = config["PHONE_NUMBER_ID"]
 
-    def send_notification(self, recipients: list[str], campsite_entry: CampsiteEntry) -> bool:
+    def send_notification(self, campsite_entry: CampsiteEntry) -> bool:
         return_code = True
-        for recipient in recipients:
+        for recipient in campsite_entry.notification_group.whatsapp:
             try:
                 message_sent = self._send_message(recipient, campsite_entry)
                 if message_sent is False:
@@ -137,17 +137,21 @@ if __name__ == "__main__":
                 "day": 13,
                 "year": 2024
             },
-            "num_people": 4 
+            "num_people": 4,
+            "notification_group": {
+                "email": ['alex.labbane@gmail.com'],
+                "whatsapp": ['19182895986']
+            }
         }
     )
     gmail_provider = CamperGmailProvider()
-    if gmail_provider.send_notification(['alex.labbane@gmail.com'], entry):
+    if gmail_provider.send_notification(entry):
         print("Success!")
     else:
         print("Failed")
 
     whatsapp_provider = CamperWhatsappProvider()
-    if whatsapp_provider.send_notification(['alex.labbane@gmail.com'], entry):
+    if whatsapp_provider.send_notification(entry):
         print("Success!")
     else:
         print("Failed")

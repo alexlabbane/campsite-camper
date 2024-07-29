@@ -1,13 +1,14 @@
 import json
 
-from custom_types.custom_types import CampsiteEntry
+from client.availability import Availability
+from custom_types.custom_types import CampsiteEntry, NotificationGroup
 from db.service.db_config import DBConfig
 
 class CamperDB:
     def __init__(self, config_file: str = None):
         self.config: DBConfig = DBConfig() if config_file is None else DBConfig(config_file)
         self.campsite_entries: list[CampsiteEntry] = []
-        self.notification_recipients: dict = {}
+        self.notification_groups: dict = {}
         self.refresh_db()
 
     def __get_db_json(self):
@@ -19,41 +20,41 @@ class CamperDB:
         new_entries: list[CampsiteEntry] = []
         db_json = self.__get_db_json()
 
+        # Parse notification groups
+        if "notification_groups" in db_json:
+            print("noti groups")
+            try:
+                for group_name, notification_group in db_json["notification_groups"].items():
+                    print(group_name, notification_group)
+                    self.notification_groups[group_name] = NotificationGroup.from_dict(notification_group)
+            except KeyError:
+                print(f"Error: DB does not follow proper schema for notification groups")
+            except BaseException:
+                print("Error: Unknown error parsing DB")
+
+        # Parse campsite entries
         try:
             for campsite in db_json["campsites"]:
+                if "notification_group" in campsite:
+                    campsite["notification_group"] = self.notification_groups[campsite["notification_group"]]
+                else:
+                    campsite["notification_group"] = NotificationGroup([], [])
+
                 new_entries.append(CampsiteEntry.from_dict(campsite))
-        except KeyError:
-            print(f"Error: DB does not follow proper schema")
+        except KeyError as e:
+            print(f"Error: DB does not follow proper schema for campsites")
         except BaseException:
             print("Error: Unknown error parsing DB")
 
         self.campsite_entries = new_entries
 
-        # Parse notification recipients
-        if "notification_recipients" in db_json:
-            self.notification_recipients = db_json["notification_recipients"]
-
     def get_campsites(self):
         return self.campsite_entries
     
-    def get_email_notification_recipients(self):
-        if "email" in self.notification_recipients:
-            return self.notification_recipients["email"]
-    
-        return []
-    
-    def get_whatsapp_notification_recipients(self):
-        if "whatsapp" in self.notification_recipients:
-            return self.notification_recipients["whatsapp"]
-
-        return []
-
 # No longer works
 if __name__ == "__main__":
     db: CamperDB = CamperDB()
 
-    print(db.get_email_notification_recipients())
-    print(db.get_whatsapp_notification_recipients())
     for entry in db.campsite_entries:
         print("--------------------------------")
         print(entry)

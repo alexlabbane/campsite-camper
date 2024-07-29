@@ -25,7 +25,11 @@ class Availability:
     DEFAULT_HTTP_RETRIES: int = 3
     DEFAULT_RETRY_COOLDOWN_SEC: int = 3
 
-    def __init__(self, campground_id, month=datetime.date.today().month, year=datetime.date.today().year):
+    def __init__(
+            self, 
+            campground_id, 
+            month=datetime.date.today().month, 
+            year=datetime.date.today().year):
         self.campground_id = campground_id
         self.month = month
         self.year = year
