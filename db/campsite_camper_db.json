@@ -1,28 +1,60 @@
 {
     "campsites": [
         {
-            "campsite_id": "272300",
+            "campsite_id": "233257",
             "start_date": {
                 "month": 7,
-                "day": 29,
-                "year": 2024
+                "day": 3,
+                "year": 2025
             },
             "end_date": {
                 "month": 7,
-                "day": 30,
-                "year": 2024
+                "day": 4,
+                "year": 2025
             },
-            "num_people": 4,
+            "num_people": 1,
+            "notification_group": "default"
+        },
+        {
+            "campsite_id": "233257",
+            "start_date": {
+                "month": 7,
+                "day": 4,
+                "year": 2025
+            },
+            "end_date": {
+                "month": 7,
+                "day": 5,
+                "year": 2025
+            },
+            "num_people": 1,
+            "notification_group": "default"
+        },
+        {
+            "campsite_id": "233257",
+            "start_date": {
+                "month": 7,
+                "day": 5,
+                "year": 2025
+            },
+            "end_date": {
+                "month": 7,
+                "day": 6,
+                "year": 2025
+            },
+            "num_people": 1,
             "notification_group": "default"
         }
     ],
     "notification_groups": {
         "default": {
             "email": [
-                "alex.labbane@gmail.com"
+                "alex.labbane@gmail.com",
+                "18bngo@gmail.com"
             ],
             "whatsapp": [
-                "19182895986"
+                "19182895986",
+                "15803192213"
             ]
         }
     }
